@@ -1,6 +1,6 @@
 import yfinance as yf
 import requests
-imporimport time
+import time
 
 # =====================================
 # 🔑 Telegram
