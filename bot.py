@@ -80,7 +80,7 @@ def liquidity_filter(vr, vt, ch):
     return score
 
 # =====================================
-# 🧠 Session
+# 🧠 Market Session
 # =====================================
 def get_market_session():
     now = datetime.now()
@@ -94,7 +94,7 @@ def get_market_session():
         return "normal"
 
 # =====================================
-# 🧠 Analyze (ULTRA PREDICTION ADDED)
+# 🧠 Analyze
 # =====================================
 def analyze(symbol, name, session):
 
@@ -119,16 +119,9 @@ def analyze(symbol, name, session):
     ma50 = float(df["Close"].tail(50).mean())
 
     # =====================================
-    # 🧠 Volume Compression (NEW)
+    # 🧠 Compression + Trend
     # =====================================
-    last20_vol = df["Volume"].tail(20).mean()
-    last50_vol = df["Volume"].tail(50).mean()
-
-    compression = last20_vol < last50_vol
-
-    # =====================================
-    # 🧠 Trend buildup (NEW)
-    # =====================================
+    compression = df["Volume"].tail(20).mean() < df["Volume"].tail(50).mean()
     trend_up = ma20 > ma50
 
     score = liquidity_filter(vr, vt, ch)
@@ -148,22 +141,20 @@ def analyze(symbol, name, session):
     if vr > 2.5: score += 2
 
     # =====================================
-    # 🚨 Early Explosion Prediction (NEW CORE)
+    # 🚨 Explosion Logic
     # =====================================
     explosion = False
     early = ""
     timing = 0
 
-    # 🔥 انفجار خلال 1–3 أيام
     if compression and trend_up and vr > 1.8 and vt > 1.05:
-
         explosion = True
         early = "💣 انفجار محتمل خلال 1–3 أيام"
         timing = 4
 
     elif session == "explosion_zone" and vr > 2.2 and vt > 1.2:
         explosion = True
-        early = "🚨 انفجار قريب جدًا (24–72 ساعة)"
+        early = "🚨 انفجار قريب (24–72 ساعة)"
         timing = 3
 
     elif session == "open_power" and vr > 2:
@@ -228,17 +219,14 @@ def run_scan():
     if not top3:
         return
 
-    explosion = None
+    explosion = top3[0]
     for r in top3:
         if r["explosion"]:
             explosion = r
             break
 
-    if not explosion:
-        explosion = top3[0]
-
     # =====================================
-    # 🧠 Update Learning
+    # 🧠 Update Memory
     # =====================================
     for r in top3:
         key = r["symbol"]
@@ -256,7 +244,7 @@ def run_scan():
     # =====================================
     # 📲 Telegram
     # =====================================
-    msg = "💣 SMART MONEY AI (ULTIMATE PREDICTION)\n\n"
+    msg = "💣 SMART MONEY AI FINAL\n\n"
 
     for r in top3:
 
@@ -282,21 +270,23 @@ def run_scan():
 🚀 TP1: {round(r['tp1'],2)}
 💣 TP2: {round(r['tp2'],2)}
 
---------------------
+-------------------
 """
 
     send(msg)
 
 # =====================================
-# 🔥 تشغيل مباشر
+# 🔥 تشغيل البوت
 # =====================================
-send("🟢 Ultimate Prediction Bot Started")
+send("🟢 البوت شغال الآن - Smart Money AI READY")
 
 while True:
 
     now = datetime.now()
+    t = now.hour * 60 + now.minute
 
-    if 9 <= now.hour <= 15:
+    # 🟢 سوق السعودية الحقيقي
+    if 570 <= t <= 900:
         run_scan()
 
     time.sleep(300)
