@@ -29,7 +29,7 @@ def send(msg):
 
 
 # =====================================
-# 🟢 أسهم شرعية
+# 🟢 الأسهم
 # =====================================
 symbols = {
     "2320.SR": "البابطين",
@@ -55,16 +55,13 @@ def fair_value(price):
 
 
 # =====================================
-# 🔍 فحص السوق
+# 🔍 فحص ذكي
 # =====================================
 def run_scan():
 
-    results = []
-    sent = set()
+    best = None
 
     for s in symbols:
-
-        print("فحص:", s)
 
         try:
 
@@ -79,42 +76,39 @@ def run_scan():
             if df is None or df.empty or len(df) < 20:
                 continue
 
-            # =========================
-            # ✔️ إصلاح مشكلة Series
-            # =========================
             df = df.dropna()
 
             price = float(df["Close"].iloc[-1])
             volume = float(df["Volume"].iloc[-1])
 
             old_price = float(df["Close"].iloc[-5])
+            avg_volume = float(df["Volume"].mean())
 
-            volume_ratio = volume / float(df["Volume"].mean())
-
+            volume_ratio = volume / avg_volume
             change_5d = ((price - old_price) / old_price) * 100
 
             fair = fair_value(price)
-
             discount_value = ((price - fair) / fair) * 100
 
             score = 0
 
-            # 📉 نزول
-            if change_5d < -5:
+            # 📉 نزول قوي
+            if change_5d < -7:
                 score += 3
 
-            # 📊 سيولة
-            if volume_ratio > 1.5:
+            # 📊 سيولة قوية
+            if volume_ratio > 2:
                 score += 3
 
-            # 💰 أقل من القيمة العادلة
-            if discount_value < -10:
-                score += 2
+            # 💰 خصم قوي
+            if discount_value < -15:
+                score += 3
 
-            if score >= 5 and s not in sent:
+            # ⚡ شرط إضافي
+            if score >= 7:
 
                 msg = f"""
-💎 فرصة شرعية
+🚀 فرصة قوية جدًا
 
 🏢 السهم:
 {symbols[s]}
@@ -125,49 +119,41 @@ def run_scan():
 📊 القيمة العادلة:
 {round(fair,2)}
 
-📉 الفرق:
+📉 الخصم:
 {round(discount_value,2)}%
 
 📈 السيولة:
 {round(volume_ratio,2)}x
 
-⭐ التقييم:
+⚡ الحركة:
+{round(change_5d,2)}%
+
+🔥 التقييم:
 {score}/10
 """
 
-                results.append(msg)
-                sent.add(s)
+                # اختيار أفضل سهم فقط
+                if best is None or score > best["score"]:
+                    best = {"msg": msg, "score": score}
 
         except Exception as e:
-
             print("خطأ:", s, e)
 
     # =====================================
-    # 📲 إرسال النتائج
+    # 📲 إرسال أفضل فرصة فقط
     # =====================================
-    if results:
-
-        final_msg = "📊 أفضل الفرص اليوم:\n\n"
-        final_msg += "\n\n".join(results[:3])
-
-        send(final_msg)
-
+    if best:
+        send(best["msg"])
     else:
-
-        send("📉 لا توجد فرص قوية اليوم")
+        send("📉 لا توجد فرص قوية جدًا الآن")
 
 
 # =====================================
-# 🚀 تشغيل البوت
+# 🚀 تشغيل مرة واحدة (مناسب لـ Railway)
 # =====================================
-send("🟢 تم تشغيل البوت بنجاح")
+print("🔍 بدء الفحص الذكي...")
+send("🟢 تم تشغيل البوت الذكي بنجاح")
 
-while True:
+run_scan()
 
-    print("🔍 بدء الفحص...")
-
-    run_scan()
-
-    print("⏳ انتظار ساعة...")
-
-    time.sleep(3600)
+print("✅ انتهى الفحص")
