@@ -79,19 +79,14 @@ def run_scan():
             if df is None or df.empty or len(df) < 20:
                 continue
 
-            last = df.iloc[-1]
-            prev = df.iloc[-2]
+            df = df.dropna()
 
-            price = float(last["Close"])
+price = float(df["Close"].iloc[-1])
+volume = float(df["Volume"].iloc[-1])
 
-            volume_ratio = (
-                float(last["Volume"])
-                / float(df["Volume"].mean())
-            )
+old_price = float(df["Close"].iloc[-5])
 
-            old_price = float(df["Close"].iloc[-5])
-
-            change_5d = (
+volume_ratio = volume / float(df["Volume"].mean())
                 (price - old_price)
                 / old_price
             ) * 100
