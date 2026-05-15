@@ -4,7 +4,6 @@ import time
 import json
 import os
 from datetime import datetime
-import feedparser
 
 # =====================================
 # 🔑 Telegram
@@ -31,7 +30,7 @@ else:
     stock_memory = {}
 
 # =====================================
-# 🟢 50 سهم
+# 🟢 50 سهم (بدون تغيير)
 # =====================================
 symbols = {
     "2222.SR": "أرامكو",
@@ -94,7 +93,7 @@ def get_market_session():
         return "normal"
 
 # =====================================
-# 🧠 Analyze
+# 🧠 Analyze Core
 # =====================================
 def analyze(symbol, name, session):
 
@@ -118,9 +117,6 @@ def analyze(symbol, name, session):
     ma20 = float(df["Close"].tail(20).mean())
     ma50 = float(df["Close"].tail(50).mean())
 
-    # =====================================
-    # 🧠 Compression + Trend
-    # =====================================
     compression = df["Volume"].tail(20).mean() < df["Volume"].tail(50).mean()
     trend_up = ma20 > ma50
 
@@ -164,15 +160,9 @@ def analyze(symbol, name, session):
     if score < 8:
         return None
 
-    # =====================================
-    # 🧠 Self Learning
-    # =====================================
     weight = stock_memory.get(symbol, 1.0)
     score = score * weight
 
-    # =====================================
-    # 🎯 Trade Levels
-    # =====================================
     entry = price
     sl = min(ma20, price * 0.97)
     tp1 = price * 1.05
@@ -225,9 +215,6 @@ def run_scan():
             explosion = r
             break
 
-    # =====================================
-    # 🧠 Update Memory
-    # =====================================
     for r in top3:
         key = r["symbol"]
 
@@ -241,10 +228,7 @@ def run_scan():
     with open(MEMORY_FILE, "w") as f:
         json.dump(stock_memory, f)
 
-    # =====================================
-    # 📲 Telegram
-    # =====================================
-    msg = "💣 SMART MONEY AI FINAL\n\n"
+    msg = "💣 SMART MONEY AI (CLEAN TRADING BOT)\n\n"
 
     for r in top3:
 
@@ -276,16 +260,15 @@ def run_scan():
     send(msg)
 
 # =====================================
-# 🔥 تشغيل البوت
+# 🔥 تشغيل
 # =====================================
-send("🟢 البوت شغال الآن - Smart Money AI READY")
+send("🟢 Trading Bot Started (NO NEWS MODULE)")
 
 while True:
 
     now = datetime.now()
     t = now.hour * 60 + now.minute
 
-    # 🟢 سوق السعودية الحقيقي
     if 570 <= t <= 900:
         run_scan()
 
