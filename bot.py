@@ -5,8 +5,8 @@ import time
 # =====================================
 # 🔑 Telegram
 # =====================================
-TOKEN = 8246559774:AAGYTkmrQUx6vDfOUOqqAtbRBPhzMA04kPo
-CHAT_ID = 836106772
+TOKEN = "PUT_YOUR_TOKEN_HERE"
+CHAT_ID = "PUT_YOUR_CHAT_ID_HERE"
 
 # =====================================
 # 📲 إرسال رسالة
@@ -15,13 +15,18 @@ def send(msg):
 
     url = f"https://api.telegram.org/bot8246559774:AAGYTkmrQUx6vDfOUOqqAtbRBPhzMA04kPo/sendMessage"
 
-    requests.post(
-        url,
-        data={
-            "chat_id":836106772,
-            "text": msg
-        }ه
-    )
+    try:
+        requests.post(
+            url,
+            data={
+                "chat_id": 836106772,
+                "text": msg
+            },
+            timeout=10
+        )
+    except Exception as e:
+        print("Telegram Error:", e)
+
 
 # =====================================
 # 🟢 أسهم شرعية
@@ -55,6 +60,7 @@ def fair_value(price):
 def run_scan():
 
     results = []
+    sent = set()
 
     for s in symbols:
 
@@ -66,7 +72,8 @@ def run_scan():
                 s,
                 period="30d",
                 interval="1d",
-                progress=False
+                progress=False,
+                threads=True
             )
 
             if df is None or df.empty or len(df) < 20:
@@ -110,7 +117,7 @@ def run_scan():
             if discount_value < -10:
                 score += 2
 
-            if score >= 5:
+            if score >= 5 and s not in sent:
 
                 msg = f"""
 💎 فرصة شرعية
@@ -135,6 +142,7 @@ def run_scan():
 """
 
                 results.append(msg)
+                sent.add(s)
 
         except Exception as e:
 
@@ -146,7 +154,6 @@ def run_scan():
     if results:
 
         final_msg = "📊 أفضل الفرص اليوم:\n\n"
-
         final_msg += "\n\n".join(results[:3])
 
         send(final_msg)
