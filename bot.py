@@ -5,8 +5,8 @@ import time
 # =====================================
 # 🔑 Telegram
 # =====================================
-TOKEN = "PUT_YOUR_TOKEN_HERE"
-CHAT_ID = "PUT_YOUR_CHAT_ID_HERE"
+TOKEN = "8246559774:AAGYTkmrQUx6vDfOUOqqAtbRBPhzMA04kPo"
+CHAT_ID = "836106772"
 
 # =====================================
 # 📲 إرسال رسالة
@@ -49,10 +49,10 @@ def fair_value(price):
     years = 5
 
     future = price * ((1 + growth) ** years)
-
     fair = future / ((1 + discount) ** years)
 
     return fair
+
 
 # =====================================
 # 🔍 فحص السوق
@@ -79,24 +79,23 @@ def run_scan():
             if df is None or df.empty or len(df) < 20:
                 continue
 
+            # =========================
+            # ✔️ إصلاح مشكلة Series
+            # =========================
             df = df.dropna()
 
-price = float(df["Close"].iloc[-1])
-volume = float(df["Volume"].iloc[-1])
+            price = float(df["Close"].iloc[-1])
+            volume = float(df["Volume"].iloc[-1])
 
-old_price = float(df["Close"].iloc[-5])
+            old_price = float(df["Close"].iloc[-5])
 
-volume_ratio = volume / float(df["Volume"].mean())
-                (price - old_price)
-                / old_price
-            ) * 100
+            volume_ratio = volume / float(df["Volume"].mean())
+
+            change_5d = ((price - old_price) / old_price) * 100
 
             fair = fair_value(price)
 
-            discount_value = (
-                (price - fair)
-                / fair
-            ) * 100
+            discount_value = ((price - fair) / fair) * 100
 
             score = 0
 
@@ -156,6 +155,7 @@ volume_ratio = volume / float(df["Volume"].mean())
     else:
 
         send("📉 لا توجد فرص قوية اليوم")
+
 
 # =====================================
 # 🚀 تشغيل البوت
